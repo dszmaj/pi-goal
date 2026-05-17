@@ -16,6 +16,7 @@ import {
 	SISYPHUS_STEP_TOOL_NAME,
 	TWEAK_APPLY_TOOL_NAME,
 	isQuestionLikeToolName,
+	isGoalProgressToolName,
 	lifecycleToolNamesForGoalStatus,
 } from "../extensions/goal-tool-names.ts";
 
@@ -74,5 +75,19 @@ test("isQuestionLikeToolName allows dialogue tools but not workhorse tools", () 
 	}
 	for (const name of ["bash", "read", "write", "edit", "grep", "find", "ls", "step_complete", "pause_goal", "abort_goal"]) {
 		assert.equal(isQuestionLikeToolName(name), false, name);
+	}
+});
+
+test("unknown custom tools count as progress without a central allowlist", () => {
+	for (const toolName of ["websearch", "webfetch", "vendor_lookup", "crm_enrich", "custom_browser_action", "task_search", "task_complete", "flask_query", "mask_data"]) {
+		assert.equal(isGoalProgressToolName(toolName), true, toolName);
+	}
+
+	for (const toolName of ["get_goal", QUESTION_TOOL_NAME, QUESTIONNAIRE_TOOL_NAME, PROPOSE_DRAFT_TOOL_NAME, CREATE_GOAL_TOOL_NAME, SISYPHUS_STEP_TOOL_NAME]) {
+		assert.equal(isGoalProgressToolName(toolName), false, toolName);
+	}
+
+	for (const toolName of ["ask_user", "clarify_scope", "confirm_choice"]) {
+		assert.equal(isGoalProgressToolName(toolName), false, toolName);
 	}
 });

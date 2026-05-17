@@ -13,3 +13,7 @@ Implemented the lightweight goal confirmation refactor. `extensions/goal.ts` now
 ### 2026-05-13 17:41:36 - Milestone
 
 Updated the command model after user direction: `/goals` and `/sisyphus` now start discussion/research/grilling-based confirmation flows, while `/goals-set` and `/sisyphus-set` directly create and start goals from the supplied objective. Removed registration of the redundant `/goal-set`, `/goal-sisyphus`, and `/goal-replace` creation aliases; refreshed prompt/validator/docs wording for the new command surface. Validation passed with `npm run check` and `npm test` (75 tests).
+
+### 2026-05-17 15:00:00 - Custom tools count as active-goal progress by default
+
+Fixed active-goal continuation gating so unknown extension/custom tools are treated as meaningful progress without requiring a central pi-goal allowlist. Known dialogue/inspection tools remain non-progress, and lifecycle stop tools still set `turnStoppedFor`; ordinary non-progress calls no longer stop sibling tool calls in the same batch. This prevents multi-call research batches such as `websearch`/`webfetch` from losing later results after the first custom tool call.

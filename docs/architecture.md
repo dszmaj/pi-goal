@@ -159,9 +159,7 @@ Tool visibility is recomputed whenever state changes. Built-in work tools remain
 - `step_complete` is hidden legacy compatibility.
 - `create_goal` remains hidden and direct calls are rejected; normal creation goes through `propose_goal_draft`.
 
-The `tool_call` interceptor blocks:
-
-- non-`get_goal` tools after a stop tool has fired in the same turn.
+The `tool_call` interceptor blocks non-`get_goal` tools only after a lifecycle stop tool has fired in the same turn. Ordinary non-progress calls do not set this post-stop state; they simply do not trigger another auto-continue turn.
 
 ## Disk format
 
@@ -189,7 +187,7 @@ When `autoContinue` is on, the extension queues continuation prompts after agent
 
 Continuation prompts include a goal id so stale prompts can be detected and neutralized. If focus changes or the goal is archived before a queued checkpoint runs, the checkpoint becomes stale and cannot drive task work.
 
-`get_goal`, question tools, and draft proposal tools are not meaningful progress for the empty-turn gate. Only lifecycle mutations and actual workhorse tools mark a turn as goal work for continuation purposes.
+`get_goal`, question tools, draft proposal tools, and legacy step completion are not meaningful progress for the empty-turn gate. Built-in work tools and unknown extension/custom tools count as goal work by default, so package-specific research or integration tools do not require a central allowlist.
 
 ## Completion output
 

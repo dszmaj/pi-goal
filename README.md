@@ -186,7 +186,7 @@ The shipped gates are intentionally small and mechanical.
 | Abort gate | Aborting missing, stale, completed, or reasonless goals |
 | Direct-create rejection | Hidden `create_goal` calls creating goals without the confirmation flow |
 | Post-stop block | Continuing to call tools after `pause_goal`, `abort_goal`, `update_goal`, or `apply_goal_tweak` stops the turn |
-| Empty-turn guard | Pure chat loops that would keep auto-continuing without meaningful goal work |
+| Empty-turn guard | Pure chat loops that would keep auto-continuing without meaningful goal work; unknown extension/custom tools count as meaningful work by default |
 | Abort pause | Active goals staying active after user abort / Ctrl-C |
 | Disk reconciliation | External pause/archive/delete/status changes being ignored or overwritten by stale memory |
 | Post-compaction reminder | Losing the active objective after session compaction |

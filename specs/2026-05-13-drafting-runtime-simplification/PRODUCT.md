@@ -45,6 +45,7 @@ This change benefits users who start goals interactively. The current drafting f
    - Auto-continue applies only to the focused active goal.
    - Stale continuation prompts are neutralized instead of acting on the wrong goal.
    - Empty/non-progress turns do not trigger an infinite continuation loop.
+   - Custom extension tools called during active execution count as meaningful work by default, without requiring pi-goal to know every package-specific tool name.
    - Pause, abort, completion, and tweak stop the current turn from doing further mutating work.
 
 7. Completion remains strict and independently audited.

@@ -36,7 +36,7 @@ import {
 	QUESTIONNAIRE_TOOL_NAME,
 	QUESTION_TOOL_NAME,
 	SISYPHUS_STEP_TOOL_NAME,
-	GOAL_PROGRESS_TOOL_NAMES,
+	isGoalProgressToolName,
 	lifecycleToolNamesForGoalStatus,
 	TWEAK_APPLY_TOOL_NAME,
 } from "./goal-tool-names.ts";
@@ -118,12 +118,10 @@ const COMPLETE_STATUS = "complete";
 const CONTINUATION_IDLE_RETRY_MS = 50;
 const STATUS_REFRESH_MS = 1000;
 /**
- * Tools that count as "real work" toward the active goal. If a non-tool-use
- * turn ends without any of these having been called, we DO NOT queue the next
- * autoContinue — the agent was just chatting. This stops infinite chat loops.
+ * Tools that count as "real work" toward the active goal. Known dialogue and
+ * inspection tools remain non-progress, while unknown extension/custom tools
+ * default to progress so packages do not need a central allowlist.
  */
-const GOAL_PROGRESS_TOOL_SET = new Set<string>(GOAL_PROGRESS_TOOL_NAMES);
-
 
 /**
  * Tools that are NEVER blocked by the post-stop in-turn block. After pause_goal,
@@ -328,16 +326,16 @@ function assistantTurnTokens(message: unknown): number {
 	return usageChannelTokens(usage.input) + usageChannelTokens(usage.output);
 }
 
-function isMeaningfulProgressToolCall(toolName: string, args: unknown): boolean {
-	if (!GOAL_PROGRESS_TOOL_SET.has(toolName)) return false;
-		if (toolName === "read") {
-			const path = asRecord(args)?.path;
-			if (typeof path === "string" && (path === ".pi/goals" || path.startsWith(".pi/goals/"))) return false;
-		}
-		if (toolName === "bash") {
-			const command = asRecord(args)?.command;
-			if (typeof command === "string" && /^\s*echo\b/.test(command)) return false;
-		}
+function isMeaningfulProgressToolCall(toolName: string, input: unknown): boolean {
+	if (!isGoalProgressToolName(toolName)) return false;
+	if (toolName === "read") {
+		const path = asRecord(input)?.path;
+		if (typeof path === "string" && (path === ".pi/goals" || path.startsWith(".pi/goals/"))) return false;
+	}
+	if (toolName === "bash") {
+		const command = asRecord(input)?.command;
+		if (typeof command === "string" && /^\s*echo\b/.test(command)) return false;
+	}
 	return true;
 }
 
@@ -2140,13 +2138,12 @@ export default function goalExtension(pi: ExtensionAPI): void {
 				// Nudge only: do not hard-block, but warn in tool response via get_goal execute
 			}
 		}
-		// Track for #4 empty-turn gate.
-		if (isMeaningfulProgressToolCall(event.toolName, asRecord(event)?.args)) {
+		// Track for #4 empty-turn gate. Non-progress tools simply do not queue the
+		// next auto-continue turn; they should not stop sibling tool calls in the
+		// same batch. Actual lifecycle stop tools set turnStoppedFor in execute().
+		if (isMeaningfulProgressToolCall(event.toolName, event.input)) {
 			if (state.goal?.id) activeGetGoalTurnsByGoalId.delete(state.goal.id);
 			goalWorkToolCalledThisTurn = true;
-		} else if (state.goal?.status === "active" && state.goal.autoContinue && event.toolName !== "get_goal") {
-			// A non-progress tool should not create an infinite retry chain.
-			turnStoppedFor = state.goal.id;
 		}
 		return;
 	});

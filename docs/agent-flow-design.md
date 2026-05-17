@@ -248,9 +248,9 @@ turn_end
   -> 如果本 turn 有 meaningful work 且 goal 仍 active，则 queueContinuation
 ```
 
-empty-turn guard 仍然存在：如果一个 turn 只是聊天，没有做任何有意义的 goal-work tool，就不会继续 auto-continue。它只防止纯聊天循环烧 token，不按固定轮数停止。
+empty-turn guard 仍然存在：如果一个 turn 只是聊天，没有做任何有意义的 goal-work tool，就不会继续 auto-continue。它只防止纯聊天循环烧 token，不按固定轮数停止。普通 non-progress tool call 不会设置 post-stop，也不会阻止同批 sibling tool calls。
 
-`get_goal`、question tools、draft proposal tools 不算实际执行进度。
+`get_goal`、question tools、draft proposal tools、legacy `step_complete` 不算实际执行进度。未知 extension/custom tools 默认算 meaningful work，这样 `websearch`、`webfetch` 或用户自定义 enrichment/browser tools 不需要在 pi-goal 里维护中央 allowlist。
 
 ## 9. Completion 与可见 Audit 阶段
 

@@ -100,6 +100,7 @@ Update event hooks:
 - Remove question counting in `tool_call` for normal goal confirmation.
 - Remove the `turn_end` drafting nudge branch.
 - Keep the execution empty-turn guard unchanged for active goals.
+- Treat unknown extension/custom tool names as active-goal progress by default, while keeping known dialogue/inspection tools (`get_goal`, question tools, draft proposal, legacy step completion) non-progress.
 - Keep `beginAccounting()`, `accountProgress()`, and `queueContinuation()` from counting confirmation turns as active goal work.
 - Keep `before_agent_start` execution-state logic for stale goal continuations, compaction reminders, and active prompts.
 - Stop reinjecting a full drafting prompt every turn; use the normal conversation and stable tool instead.
@@ -111,6 +112,7 @@ Do not loosen these areas:
 - `queueContinuation()` and stale continuation extraction.
 - `runningGoalId` consistency checks in pause/abort/complete validators.
 - `turnStoppedFor` post-stop blocking.
+- `turnStoppedFor` should be set only by lifecycle-stop tool execution, not by ordinary non-progress tool calls; the empty-turn guard handles non-progress continuation safety.
 - goal file reconciliation and archival.
 - `update_goal(status="complete")` auditor invocation.
 - visible audit started/approved/rejected messages.
