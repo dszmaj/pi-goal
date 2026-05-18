@@ -41,7 +41,7 @@ This change benefits users who start goals interactively. The current drafting f
 
 6. The confirmed execution state remains strict and durable.
    - Active, paused, and complete states continue to be persisted under `.pi/goals/`.
-   - Focus remains session-owned and is reconciled from disk/ledger as today.
+   - Focus remains session-owned; active goal files on disk are visible to other sessions but are not auto-focused by a new/unfocused session.
    - Auto-continue applies only to the focused active goal.
    - Stale continuation prompts are neutralized instead of acting on the wrong goal.
    - Empty/non-progress turns do not trigger an infinite continuation loop.

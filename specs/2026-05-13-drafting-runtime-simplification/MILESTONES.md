@@ -17,3 +17,7 @@ Updated the command model after user direction: `/goals` and `/sisyphus` now sta
 ### 2026-05-17 15:00:00 - Custom tools count as active-goal progress by default
 
 Fixed active-goal continuation gating so unknown extension/custom tools are treated as meaningful progress without requiring a central pi-goal allowlist. Known dialogue/inspection tools remain non-progress, and lifecycle stop tools still set `turnStoppedFor`; ordinary non-progress calls no longer stop sibling tool calls in the same batch. This prevents multi-call research batches such as `websearch`/`webfetch` from losing later results after the first custom tool call.
+
+### 2026-05-18 21:43:34 - Keep new sessions unfocused by default
+
+Strengthened session isolation with the minimal focus-policy change: disk-only active goals are no longer auto-focused when a session has no explicit `pi-goal-focus` entry. Existing focused sessions and legacy `pi-goal-state` migration still restore focus, but a fresh second instance now starts unfocused and requires `/goal-focus` before auto-continuing goal work.

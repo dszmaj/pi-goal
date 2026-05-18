@@ -52,8 +52,7 @@ export function resolveSessionFocus(args: {
 		args.pool.set(args.legacyGoal.id, cloneGoal(args.legacyGoal));
 		return args.legacyGoal.id;
 	}
-	const open = openGoalsFromPool(args.pool);
-	return open.length === 1 ? open[0]?.id ?? null : null;
+	return null;
 }
 
 export function goalSelectorLabel(goal: GoalRecord, focusedGoalId: string | null): string {

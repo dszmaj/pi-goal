@@ -103,6 +103,7 @@ Update event hooks:
 - Treat unknown extension/custom tool names as active-goal progress by default, while keeping known dialogue/inspection tools (`get_goal`, question tools, draft proposal, legacy step completion) non-progress.
 - Keep `beginAccounting()`, `accountProgress()`, and `queueContinuation()` from counting confirmation turns as active goal work.
 - Keep `before_agent_start` execution-state logic for stale goal continuations, compaction reminders, and active prompts.
+- Do not auto-focus a disk-only active goal for sessions without an explicit focus entry; new/unfocused sessions should show open goals and require `/goal-focus` before active-goal continuation.
 - Stop reinjecting a full drafting prompt every turn; use the normal conversation and stable tool instead.
 
 ### 7. Preserve strict execution and audit paths
