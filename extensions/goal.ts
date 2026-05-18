@@ -304,6 +304,11 @@ function isAbortedAssistantMessage(message: unknown): boolean {
 	return raw?.role === "assistant" && raw.stopReason === "aborted";
 }
 
+function isErrorAssistantMessage(message: unknown): boolean {
+	const raw = asRecord(message);
+	return raw?.role === "assistant" && raw.stopReason === "error";
+}
+
 function isToolUseAssistantMessage(message: unknown): boolean {
 	const raw = asRecord(message);
 	return raw?.role === "assistant" && raw.stopReason === "toolUse";
@@ -311,6 +316,14 @@ function isToolUseAssistantMessage(message: unknown): boolean {
 
 function hasAbortedAssistantMessage(messages: unknown[]): boolean {
 	return messages.some(isAbortedAssistantMessage);
+}
+
+function latestAssistantMessageIsError(messages: unknown[]): boolean {
+	for (let i = messages.length - 1; i >= 0; i--) {
+		const raw = asRecord(messages[i]);
+		if (raw?.role === "assistant") return raw.stopReason === "error";
+	}
+	return false;
 }
 
 function usageChannelTokens(value: unknown): number {
@@ -381,6 +394,7 @@ export default function goalExtension(pi: ExtensionAPI): void {
 	// turn gets an extra reminder block. Set in session_compact, consumed
 	// (cleared) in before_agent_start.
 	let postCompactReminderPending = false;
+	let compactionInProgress = false;
 
 	const accounting = {
 		activeGoalId: null as string | null,
@@ -893,6 +907,10 @@ export default function goalExtension(pi: ExtensionAPI): void {
 		continuationTimer = null;
 		continuationScheduledFor = null;
 		syncGoalTools();
+		if (compactionInProgress) {
+			if (continuationQueuedFor === goalId) continuationQueuedFor = null;
+			return;
+		}
 		if (!state.goal || state.goal.id !== goalId || state.goal.status !== "active" || !state.goal.autoContinue) {
 			if (continuationQueuedFor === goalId) continuationQueuedFor = null;
 			return;
@@ -933,6 +951,7 @@ export default function goalExtension(pi: ExtensionAPI): void {
 
 	function queueContinuation(ctx: ExtensionContext, force = false): void {
 		if (confirmationIntent !== null || tweakDraftingFor !== null) return;
+		if (compactionInProgress) return;
 		if (!state.goal || state.goal.status !== "active" || !state.goal.autoContinue) return;
 		const goalId = state.goal.id;
 		if (!force && (continuationQueuedFor === goalId || continuationScheduledFor === goalId)) return;
@@ -2167,7 +2186,9 @@ export default function goalExtension(pi: ExtensionAPI): void {
 		// #4: only queue if some real work was done this turn — otherwise the model is
 		// just chatting and we should not keep firing turns on noise.
 		if (
-			!isToolUseAssistantMessage(message)
+			!compactionInProgress
+			&& !isToolUseAssistantMessage(message)
+			&& !isErrorAssistantMessage(message)
 			&& state.goal?.status === "active"
 			&& state.goal.autoContinue
 			&& goalWorkToolCalledThisTurn
@@ -2185,6 +2206,7 @@ export default function goalExtension(pi: ExtensionAPI): void {
 	});
 
 	pi.on("session_start", async (event, ctx) => {
+		compactionInProgress = false;
 		loadState(ctx);
 		syncTerminalInputPause(ctx);
 		if (event.reason === "resume" && !state.goal && openGoals().length > 1 && ctx.hasUI) {
@@ -2203,10 +2225,13 @@ export default function goalExtension(pi: ExtensionAPI): void {
 	});
 
 	pi.on("session_before_compact", async (_event, ctx) => {
+		compactionInProgress = true;
+		clearContinuationState();
 		accountProgress(ctx);
 	});
 
 	pi.on("session_compact", async (_event, ctx) => {
+		compactionInProgress = false;
 		if (confirmationIntent !== null || tweakDraftingFor !== null) return;
 		if (state.goal) persist(ctx);
 		beginAccounting();
@@ -2219,6 +2244,7 @@ export default function goalExtension(pi: ExtensionAPI): void {
 	});
 
 	pi.on("session_tree", async (_event, ctx) => {
+		compactionInProgress = false;
 		loadState(ctx);
 		syncTerminalInputPause(ctx);
 		beginAccounting();
@@ -2262,6 +2288,7 @@ export default function goalExtension(pi: ExtensionAPI): void {
 			// A user-driven turn — clear any queued continuation so we don't
 			// double-fire after the user's own message returns. Also reset the
 			// autoContinue nudge state so the user always gets a fresh chain.
+			compactionInProgress = false;
 			clearContinuationState();
 			resetGetGoalNudgeState(state.goal?.id);
 		}
@@ -2349,6 +2376,7 @@ export default function goalExtension(pi: ExtensionAPI): void {
 		continuationQueuedFor = null;
 		if (!state.goal || state.goal.status !== "active" || !state.goal.autoContinue) return;
 		if (endedGoalId && state.goal.id !== endedGoalId) return;
+		if (compactionInProgress || latestAssistantMessageIsError(event.messages)) return;
 		if (!reconcileFocusedGoalFromDisk(ctx)) return;
 		if (hasAbortedAssistantMessage(event.messages) || ctx.signal?.aborted) {
 			pauseActiveGoal(ctx);
