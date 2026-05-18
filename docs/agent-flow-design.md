@@ -36,7 +36,7 @@
 一次成功运行大致是：
 
 ```text
-/goals 或 /sisyphus
+/goal 或 /sisyphus
   -> 发送轻量 intent/confirmation 指令
   -> agent 询问必要澄清问题，或在请求足够明确时直接 proposal
   -> agent 调用 propose_goal_draft
@@ -70,7 +70,7 @@ let focusedGoalId: string | null = null;
 
 | 状态 | 作用 |
 |---|---|
-| `confirmationIntent` | 当前 `/goals` 或 `/sisyphus` 的轻量确认意图，只保存 focus、原始 topic 和开始时间。 |
+| `confirmationIntent` | 当前 `/goal` 或 `/sisyphus` 的轻量确认意图，只保存 focus、原始 topic 和开始时间。 |
 | `tweakDraftingFor` | 当前 `/goal-tweak` 流程对应的 goal id。 |
 | `continuationQueuedFor` / `continuationScheduledFor` | 避免同一 goal 重复排队 auto-continue。 |
 | `runningGoalId` | 防止 focus 改变后旧 tool call 继续作用在错误 goal 上。 |
@@ -134,13 +134,13 @@ ledger append 是 best-effort：写入失败不应该让用户的生命周期动
 
 | 命令 | 作用 |
 |---|---|
-| `/goals <topic>` | 开始 regular goal intent discussion，可澄清、研究、拷问后 proposal。 |
+| `/goal <topic>` | 开始 regular goal intent discussion，可澄清、研究、拷问后 proposal。 |
 | `/sisyphus <topic>` | 开始 Sisyphus 风格 intent discussion，重点拷问 ordered steps、done criteria 和 blockers。 |
 | `/goals-set <objective>` | 直接创建并启动 regular goal，不进入 draft discussion。 |
 | `/sisyphus-set <objective>` | 直接创建并启动 Sisyphus goal，不进入 draft discussion。 |
 | `/goal-list` | 列出 `.pi/goals/` 下所有 open goals。 |
 | `/goal-focus` | 让用户选择当前 session focus。 |
-| `/goal-status` / `/goal` | 显示 focused goal 状态和其他 open goals 提示。 |
+| `/goal-status` | 显示 focused goal 状态和其他 open goals 提示。 |
 | `/goal-tweak <change>` | 修改 focused goal，但也要先走 tweak drafting。 |
 | `/goal-pause` | 用户暂停 focused active goal。 |
 | `/goal-resume` | 在策略允许时恢复 paused goal。 |
@@ -156,7 +156,7 @@ confirmation 是收集用户意图的轻量对话阶段，不是正式执行阶�
 
 当前设计：
 
-- `propose_goal_draft` 常驻可见，但只有 `/goals` 或 `/sisyphus` 产生的 confirmation intent 存在时会通过 validator；
+- `propose_goal_draft` 常驻可见，但只有 `/goal` 或 `/sisyphus` 产生的 confirmation intent 存在时会通过 validator；
 - agent 可以用 `goal_question` 或 `goal_questionnaire` 询问具体问题，也可以用普通对话澄清；
 - 如果用户请求已经非常完整，可以直接 proposal；
 - 如果能直接改善 goal contract，允许 targeted read-only research/reconnaissance；
@@ -176,7 +176,7 @@ interface GoalConfirmationIntent {
 典型流程：
 
 ```text
-/goals topic
+/goal topic
   -> 创建 confirmationIntent
   -> 发送普通 confirmation 指令
   -> agent 澄清问题或在目标足够清楚时直接 proposal
@@ -371,7 +371,7 @@ summary 来自：
 ```text
 User
   |
-  | /goals 或 /sisyphus
+  | /goal 或 /sisyphus
   v
 Confirmation runtime
   |-- 发送轻量 intent/confirmation 指令

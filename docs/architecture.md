@@ -43,7 +43,7 @@ Reusable logic is split into smaller modules:
 
 ```text
 /user command
-  ├─ /goals or /sisyphus
+  ├─ /goal or /sisyphus
   │    └─ confirmationIntent = {focus, originalTopic, startedAt}
   │         ├─ agent clarifies, researches, or grills only when needed
   │         ├─ targeted reconnaissance is prompt-guided, not hard-blocked
@@ -98,8 +98,8 @@ Because this is stored with `pi.appendEntry("pi-goal-focus", ...)`, it is sessio
 1. Use a valid focused id from the latest focus entry.
 2. If the latest focus entry explicitly has `focusedGoalId: null`, or points at a missing/stale goal, remain unfocused.
 3. If no focus entry exists, merge a compatible legacy `pi-goal-state { version: 3, goal }` goal and focus it. If disk already has the same id, the disk record wins and the legacy session record only supplies focus.
-4. If no focus entry exists and exactly one open goal exists, auto-focus it for compatibility.
-5. If multiple open goals exist and no valid focus exists, remain unfocused until `/goal-focus`, `/goal-resume`, `/goal-clear`, `/goal-abort`, `/goal-pause`, or `/goal-tweak` asks the user to choose.
+4. If no focus entry exists and no compatible legacy state exists, remain unfocused even when exactly one open goal exists.
+5. Unfocused sessions remain unfocused until `/goal-focus`, `/goal-resume`, `/goal-clear`, `/goal-abort`, `/goal-pause`, or `/goal-tweak` asks the user to choose.
 
 Focus is human-owned. No agent tool can switch focus. Lifecycle tools operate only on the focused goal.
 
@@ -121,7 +121,7 @@ The legacy `step_complete` tool remains registered as a hidden compatibility no-
 
 ## Drafting and confirmation
 
-Drafting is now a lightweight user-intent confirmation conversation. For `/goals` and `/sisyphus`, the runtime stores only a thin session-local `confirmationIntent` with the requested focus, original topic, and start time. The agent may ask a focused question when the topic is vague, perform targeted read-only research when it improves the goal contract, grill assumptions or ordered steps, or proceed directly to `propose_goal_draft` when the request is already concrete.
+Drafting is now a lightweight user-intent confirmation conversation. For `/goal` and `/sisyphus`, the runtime stores only a thin session-local `confirmationIntent` with the requested focus, original topic, and start time. The agent may ask a focused question when the topic is vague, perform targeted read-only research when it improves the goal contract, grill assumptions or ordered steps, or proceed directly to `propose_goal_draft` when the request is already concrete.
 
 `propose_goal_draft` enforces:
 
@@ -133,11 +133,11 @@ A deprecated optional `draftId` parameter is accepted for compatibility but igno
 
 ## Command focus behavior
 
-- `/goals` and `/sisyphus` start discussion-based confirmation before creating a new focused goal.
+- `/goal` and `/sisyphus` start discussion-based confirmation before creating a new focused goal.
 - `/goals-set` and `/sisyphus-set` directly create and focus a new open goal from the supplied objective.
 - `/goal-list` prints all open goals with id, status, mode, usage, objective title, path, and a focus marker.
 - `/goal-focus` uses `ctx.ui.select` when multiple goals are open and updates only session focus.
-- `/goal-status` and `/goal` show the focused goal plus an `other open goals` hint.
+- `/goal-status` shows the focused goal plus an `other open goals` hint.
 - `/goal-resume` resumes the focused paused goal; when unfocused with multiple open goals, it asks the user to choose. Choosing an already active goal only focuses it.
 - `/goal-clear` and `/goal-abort` archive only the focused/selected goal and never clear the whole pool at once.
 - During goal confirmation, `/goal-clear` and `/goal-abort` only cancel the confirmation flow; they do not archive an unrelated focused goal unless the user invokes a lifecycle command after confirmation is cancelled.

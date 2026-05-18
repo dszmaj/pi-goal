@@ -12,7 +12,7 @@ Implemented the lightweight goal confirmation refactor. `extensions/goal.ts` now
 
 ### 2026-05-13 17:41:36 - Milestone
 
-Updated the command model after user direction: `/goals` and `/sisyphus` now start discussion/research/grilling-based confirmation flows, while `/goals-set` and `/sisyphus-set` directly create and start goals from the supplied objective. Removed registration of the redundant `/goal-set`, `/goal-sisyphus`, and `/goal-replace` creation aliases; refreshed prompt/validator/docs wording for the new command surface. Validation passed with `npm run check` and `npm test` (75 tests).
+Updated the command model after user direction: `/goal` and `/sisyphus` now start discussion/research/grilling-based confirmation flows, while `/goals-set` and `/sisyphus-set` directly create and start goals from the supplied objective. Removed registration of the redundant `/goal-set`, `/goal-sisyphus`, and `/goal-replace` creation aliases; refreshed prompt/validator/docs wording for the new command surface. Validation passed with `npm run check` and `npm test` (75 tests).
 
 ### 2026-05-17 15:00:00 - Custom tools count as active-goal progress by default
 
@@ -21,3 +21,7 @@ Fixed active-goal continuation gating so unknown extension/custom tools are trea
 ### 2026-05-18 21:43:34 - Keep new sessions unfocused by default
 
 Strengthened session isolation with the minimal focus-policy change: disk-only active goals are no longer auto-focused when a session has no explicit `pi-goal-focus` entry. Existing focused sessions and legacy `pi-goal-state` migration still restore focus, but a fresh second instance now starts unfocused and requires `/goal-focus` before auto-continuing goal work.
+
+### 2026-05-18 21:59:20 - Rename discussion command to /goal
+
+Changed the regular goal discussion command from the former plural spelling to `/goal` and removed the old `/goal` read-only status alias. `/goal-status` remains the explicit status command, while `/goal <topic>` now starts the regular confirmation discussion. Updated user-facing prompt/docs/spec references and verified with `npm test` and `npm run check`.

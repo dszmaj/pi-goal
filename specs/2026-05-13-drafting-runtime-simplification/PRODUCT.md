@@ -2,13 +2,13 @@
 
 ## Summary
 
-`pi-goal` should clearly separate goal-intent discussion from direct goal creation. `/goals` and `/sisyphus` start a normal agentic conversation that can research, clarify, grill, and converge on a confirmed goal contract. `/goals-set` and `/sisyphus-set` skip drafting and immediately create an active goal from the supplied text. Confirmed goals continue to have durable focus, lifecycle guards, auto-continue recovery, and independent completion auditing.
+`pi-goal` should clearly separate goal-intent discussion from direct goal creation. `/goal` and `/sisyphus` start a normal agentic conversation that can research, clarify, grill, and converge on a confirmed goal contract. `/goals-set` and `/sisyphus-set` skip drafting and immediately create an active goal from the supplied text. Confirmed goals continue to have durable focus, lifecycle guards, auto-continue recovery, and independent completion auditing.
 
 This change benefits users who start goals interactively. The current drafting flow can fail when tool visibility, hidden prompts, draft ids, or question nudges drift; the desired behavior is that goal confirmation remains robust even if the model asks plain questions, the user answers in later turns, or tools are resynced.
 
 ## Behavior
 
-1. `/goals <topic>` starts a lightweight goal-intent conversation.
+1. `/goal <topic>` starts a lightweight goal-intent conversation.
    - The user sees the agent clarify, research, grill assumptions, or propose a goal draft.
    - The agent may ask focused questions when the topic is vague or underspecified.
    - If limited read-only reconnaissance would improve the goal contract, the agent may perform it before proposing.
@@ -30,7 +30,7 @@ This change benefits users who start goals interactively. The current drafting f
 4. `propose_goal_draft` is a stable commit affordance rather than a fragile dynamically exposed tool.
    - The tool remains registered and discoverable enough that the model can use it after question turns, compaction, or active-tool resync.
    - Calls with an empty objective are rejected.
-   - Calls that would silently change `/goals` into Sisyphus, or `/sisyphus` into a regular goal, are rejected.
+   - Calls that would silently change `/goal` into Sisyphus, or `/sisyphus` into a regular goal, are rejected.
    - Direct `create_goal` remains rejected; user confirmation through the draft dialog is still the creation path.
 
 5. User confirmation remains explicit.
@@ -73,7 +73,7 @@ This change benefits users who start goals interactively. The current drafting f
 
 ## Decisions
 
-- `propose_goal_draft` still requires a recent `/goals` or `/sisyphus` confirmation intent. This keeps discussion-based goal creation user-command-owned while removing hidden draft ids and question counters.
+- `propose_goal_draft` still requires a recent `/goal` or `/sisyphus` confirmation intent. This keeps discussion-based goal creation user-command-owned while removing hidden draft ids and question counters.
 - Continue Chatting keeps the thin session-local confirmation intent so the next proposal can still use the same original topic and mode.
 - `/goals-set` and `/sisyphus-set` are direct creation paths and intentionally bypass confirmation because the user selected an explicit set command.
 - `/goal-tweak` remains a separate follow-up path for this refactor; it can be simplified later if the lightweight goal confirmation model proves stable.

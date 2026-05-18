@@ -31,7 +31,7 @@ interface GoalConfirmationIntent {
 
 Implementation notes:
 
-- Remove `draftId` and `questionsAsked` from the normal `/goals` and `/sisyphus` confirmation flow.
+- Remove `draftId` and `questionsAsked` from the normal `/goal` and `/sisyphus` confirmation flow.
 - Remove `draftingNudgesByDraftId` and `queueDraftingNudge()`.
 - Keep the intent session-local; do not persist it to goal files or ledger.
 - Keep `/goal-clear` and `/goal-abort` able to clear this intent.
@@ -39,7 +39,7 @@ Implementation notes:
 
 Tradeoff: without draft ids, overlapping hidden drafting prompts are no longer treated as a hard runtime race. That is acceptable if `/goal-set` no longer depends on hidden prompt identity. The hard invariant moves to explicit user confirmation and mode validation.
 
-### 2. Make `/goals` and `/sisyphus` send conversational intent instructions
+### 2. Make `/goal` and `/sisyphus` send conversational intent instructions
 
 Update `startGoalDrafting()`:
 
@@ -48,7 +48,7 @@ Update `startGoalDrafting()`:
 - Send a visible or normal follow-up/steer message that asks the executor to clarify or propose a draft.
 - Avoid hidden custom-message prompts as the sole carrier of the drafting contract.
 - Prefer instruction text that mirrors `pi-specs`: outcome, success criteria, constraints, and final shape, without over-prescribing internal process.
-- For `/goals`, permit clarification and targeted read-only research that improves the goal contract.
+- For `/goal`, permit clarification and targeted read-only research that improves the goal contract.
 - For `/sisyphus`, emphasize grilling the ordered plan, done criteria, blockers, and step boundaries before proposing.
 
 The prompt should say:
@@ -82,6 +82,7 @@ Add direct creation handlers:
 - Both commands trim the objective, reject empty objectives with a warning, clear any pending confirmation intent, call the existing `replaceGoal()` creation path, and start execution immediately when auto-continue is enabled.
 - Keep direct set commands separate from `propose_goal_draft`; they are explicit user shortcuts, not agent tools.
 - Remove or stop registering redundant creation aliases (`/goal-set`, `/goal-sisyphus`) so the user-facing command surface has one discussion pair and one direct-set pair.
+- Stop registering `/goal` as a read-only status alias; `/goal-status` remains the status command while `/goal <topic>` becomes the normal discussion command.
 
 ### 5. Simplify tool-surface synchronization
 
@@ -123,7 +124,7 @@ Do not loosen these areas:
 
 Update at least:
 
-- `README.md` - document `/goals`, `/sisyphus`, `/goals-set`, and `/sisyphus-set`; remove old `/goal-set` and `/goal-sisyphus` examples from primary docs.
+- `README.md` - document `/goal`, `/sisyphus`, `/goals-set`, and `/sisyphus-set`; remove old `/goal-set` and `/goal-sisyphus` examples from primary docs.
 - `docs/agent-flow-design.md` - recast drafting as a thin conversational confirmation stage rather than a hard runtime phase and name the new commands.
 - `docs/architecture.md` if it still describes draft ids, hard tool visibility gates, question counters, or old command names.
 
@@ -142,7 +143,7 @@ Expected test changes:
 - `tests/goal-prompts.test.ts`
   - Update drafting prompt text expectations, if the helper remains.
 - Integration-style extension tests if available
-  - `/goals` starts confirmation without requiring question counters.
+  - `/goal` starts confirmation without requiring question counters.
   - `/goals-set` creates a normal active goal directly and `/sisyphus-set` creates a Sisyphus active goal directly.
   - user confirmation creates a focused active goal.
   - Continue Chatting does not create a goal.
@@ -153,7 +154,7 @@ Expected test changes:
 
 Map to PRODUCT.md behavior:
 
-- Behavior #1: unit tests for prompt/helper output; smoke/manual test `/goals` with a concrete topic and verify direct proposal path works.
+- Behavior #1: unit tests for prompt/helper output; smoke/manual test `/goal` with a concrete topic and verify direct proposal path works.
 - Behavior #2: unit tests for Sisyphus mode validation and prompt text; manual test ordered plan preservation.
 - Behavior #3: tests or smoke coverage for `/goals-set` and `/sisyphus-set` direct creation; empty objective warning remains user-facing.
 - Behavior #4: unit tests for `validateGoalDraftProposal()` empty objective, missing intent, mode mismatch, and optional `draftId` no-op compatibility.
@@ -164,7 +165,7 @@ Map to PRODUCT.md behavior:
 
 ## Risks and mitigations
 
-- Risk: Removing draft-id hard gates could allow an old model turn to propose after a newer `/goal-set` intent.
+- Risk: Removing draft-id hard gates could allow an old model turn to propose after a newer `/goal` intent.
   Mitigation: rely on the current thin intent plus explicit user confirmation; if a stale draft appears, the user can choose Continue Chatting or cancel. Keep mode mismatch rejection.
 
 - Risk: Making confirmation too loose could let the agent start work before a goal is confirmed.
@@ -182,5 +183,5 @@ Map to PRODUCT.md behavior:
 ## Follow-ups
 
 - Decide whether `/goal-tweak` should use the same lightweight confirmation style in this refactor or a separate later pass.
-- Decide whether `propose_goal_draft` should eventually support explicit proposals without a preceding `/goal-set` command.
+- Decide whether `propose_goal_draft` should eventually support explicit proposals without a preceding `/goal` or `/sisyphus` command.
 - Consider a small runtime design note after implementation explaining the new three-stage model: lightweight confirmation, strict execution, strict audit.

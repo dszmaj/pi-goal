@@ -125,10 +125,10 @@ The agent should decide:
 
 The following behaviors remain runtime-enforced:
 
-1. **User-confirmed discussion creation.** A durable goal from `/goals` or `/sisyphus` is created only after `propose_goal_draft` confirmation.
+1. **User-confirmed discussion creation.** A durable goal from `/goal` or `/sisyphus` is created only after `propose_goal_draft` confirmation.
 2. **Explicit direct set creation.** `/goals-set` and `/sisyphus-set` are user-only shortcuts that create immediately from the supplied objective.
 3. **No hidden direct creation.** `create_goal` remains rejected or unavailable as a normal agent path.
-4. **Mode consistency.** A draft proposal cannot silently change `/goals` into Sisyphus or `/sisyphus` into a regular goal.
+4. **Mode consistency.** A draft proposal cannot silently change `/goal` into Sisyphus or `/sisyphus` into a regular goal.
 5. **Stale continuation protection.** A queued continuation for an old goal cannot perform work for a different current goal.
 6. **Human-owned focus.** The agent cannot silently switch focus between open goals.
 7. **Completion audit.** `update_goal(status="complete")` archives only if the independent auditor returns exactly one approving marker.
@@ -460,7 +460,7 @@ Make ledger reconstruction participate in `loadState`.
 
 Delete or simplify unused gates and phase machinery.
 
-- `questionsAsked`, normal-goal `draftId`, and drafting nudges are removed from the `/goal-set` confirmation path.
+- `questionsAsked`, normal-goal `draftId`, and drafting nudges are removed from the `/goal` confirmation path.
 - Drafting tool gate becomes no-op or is removed.
 - Repeated `get_goal` block removed.
 - Prompt text no longer references runtime gates for soft behavior.
@@ -529,7 +529,7 @@ Deliverables:
 - Relax drafting workhorse block.
 - Relax active question block.
 - Replace repeated `get_goal` block with nudge.
-- Simplify `/goals` and `/sisyphus` confirmation to a thin intent instead of a hidden draft-id/question-counter state machine.
+- Simplify `/goal` and `/sisyphus` confirmation to a thin intent instead of a hidden draft-id/question-counter state machine.
 - Add `/goals-set` and `/sisyphus-set` for direct user-owned creation when no drafting discussion is wanted.
 - Update prompts and tests.
 

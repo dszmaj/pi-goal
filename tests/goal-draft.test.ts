@@ -53,7 +53,7 @@ test("validateGoalDraftProposal rejects missing confirmation intent but allows m
 		sisyphus: false,
 	});
 	assert.equal(noIntent.ok, false);
-	if (!noIntent.ok) assert.match(noIntent.message, /no \/goals or \/sisyphus intent discussion/);
+	if (!noIntent.ok) assert.match(noIntent.message, /no \/goal or \/sisyphus intent discussion/);
 
 	const unfinished = validateGoalDraftProposal({
 		intent: intent({ focus: "goal" }),

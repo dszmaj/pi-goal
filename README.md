@@ -7,7 +7,7 @@ The extension is designed around one rule: **the user owns intent; the agent exe
 ## What it provides
 
 - **Two goal styles**: regular goals for open-ended work, and Sisyphus goals for patient ordered execution.
-- **Intent-before-run flow**: `/goals` and `/sisyphus` start a discussion where the agent can clarify, research, and grill before any work begins.
+- **Intent-before-run flow**: `/goal` and `/sisyphus` start a discussion where the agent can clarify, research, and grill before any work begins.
 - **Direct set flow**: `/goals-set` and `/sisyphus-set` immediately create and start a goal from the supplied objective.
 - **Confirm-before-commit for discussions**: the agent must call `propose_goal_draft`; the user confirms or keeps chatting.
 - **Full goal visibility**: after confirmation, the final objective is printed back into the conversation in full.
@@ -46,7 +46,7 @@ pi -e .
 ### Regular goal
 
 ```text
-/goals add structured logging to the auth module
+/goal add structured logging to the auth module
 ```
 
 Flow:
@@ -76,7 +76,7 @@ If the objective is already final and should start immediately, use:
 ## User commands
 
 ```text
-/goals <topic>          Discuss/research/grill a regular goal, then confirm a draft
+/goal <topic>          Discuss/research/grill a regular goal, then confirm a draft
 /sisyphus <topic>       Discuss/grill a Sisyphus-style goal, then confirm a draft
 /goals-set <objective>  Immediately create and start a regular goal
 /sisyphus-set <objective> Immediately create and start a Sisyphus-style goal
@@ -103,7 +103,7 @@ Pressing `Esc` or aborting an active run pauses the goal so it does not remain f
 - **Branch-local focus**: because focus is reconstructed from the current session branch, `/tree` navigation can restore a different focus for a different branch.
 - **One continuation chain**: auto-continue only schedules work for the focused goal in the current session.
 
-Creating a goal with `/goals`, `/sisyphus`, `/goals-set`, or `/sisyphus-set` no longer clears other open goals. It creates a new active goal file and focuses it. Use `/goal-list` to inspect open goals and `/goal-focus` to switch the session focus. If the latest focus entry explicitly clears focus, or points at a missing/stale goal, a remaining single open goal is not auto-focused; single-open auto-focus only happens when no focus entry exists at all. If multiple open goals exist and the session has no valid focus, `/goal-resume`, `/goal-clear`, `/goal-abort`, `/goal-pause`, and `/goal-tweak` ask the user to choose a goal instead of acting on all of them.
+Creating a goal with `/goal`, `/sisyphus`, `/goals-set`, or `/sisyphus-set` no longer clears other open goals. It creates a new active goal file and focuses it in the current session. Use `/goal-list` to inspect open goals and `/goal-focus` to switch the session focus. A new or unfocused session does not auto-focus active goal files from disk, even when there is only one open goal; it stays unfocused until the user chooses a goal. If multiple open goals exist and the session has no valid focus, `/goal-resume`, `/goal-clear`, `/goal-abort`, `/goal-pause`, and `/goal-tweak` ask the user to choose a goal instead of acting on all of them.
 
 ## Agent tools
 
@@ -124,7 +124,7 @@ The extension exposes tools only when they make sense for the current lifecycle 
 
 ## Drafting behavior
 
-`/goals` and `/sisyphus` start a lightweight intent discussion, not a heavy runtime sub-state. The agent clarifies, researches, and grills only when needed, may proceed directly for fully specified requests, and then calls `propose_goal_draft` to show the user a Confirm / Continue Chatting dialog. `goal_question` and `goal_questionnaire` are available when structured input helps, but plain conversation is acceptable.
+`/goal` and `/sisyphus` start a lightweight intent discussion, not a heavy runtime sub-state. The agent clarifies, researches, and grills only when needed, may proceed directly for fully specified requests, and then calls `propose_goal_draft` to show the user a Confirm / Continue Chatting dialog. `goal_question` and `goal_questionnaire` are available when structured input helps, but plain conversation is acceptable.
 
 `/goals-set` and `/sisyphus-set` skip the discussion and confirmation dialog. They directly create and focus an active goal from the supplied objective so execution can begin immediately.
 
@@ -179,7 +179,7 @@ The shipped gates are intentionally small and mechanical.
 
 | Gate | Prevents |
 |---|---|
-| Focus consistency | `/goals` accidentally becoming Sisyphus, or `/sisyphus` becoming regular mode |
+| Focus consistency | `/goal` accidentally becoming Sisyphus, or `/sisyphus` becoming regular mode |
 | Confirm-before-commit | The agent silently creating or replacing a discussion-based goal |
 | Direct set intent | `/goals-set` and `/sisyphus-set` are explicit user shortcuts that bypass draft confirmation |
 | Completion auditor gate | Archiving completion unless an independent pi auditor agent returns `<approved/>` |
